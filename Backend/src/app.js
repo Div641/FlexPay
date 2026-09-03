@@ -2,8 +2,10 @@ import express from "express";
 import productRoutes from "./routes/product.routes.js"; 
 import variantRoutes from "./routes/variant.routes.js";
 import emiRoutes from "./routes/emi.routes.js";
+import cors from "cors";
 
 const app = express();
+app.use(cors());
 
 app.use(express.json());
 
