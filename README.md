@@ -61,7 +61,13 @@ Service Layer
       |
       v
 PostgreSQL
+
+
 ```
+
+## System Architecture
+
+![FlexPay Architecture](./Frontend/public/images/flexpay-architecture.png)
 
 ## Project Structure
 
