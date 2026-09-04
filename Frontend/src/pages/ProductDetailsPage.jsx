@@ -82,6 +82,9 @@ function ProductDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Controls the confirmation modal
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
   /*
    * Fetch product and variants from API
    */
@@ -90,6 +93,8 @@ function ProductDetailsPage() {
       try {
         setLoading(true);
         setError("");
+        setShowConfirmation(false);
+        setSelectedPlanId(null);
 
         const [productResponse, variantsResponse] = await Promise.all([
           getProduct(slug),
@@ -130,32 +135,26 @@ function ProductDetailsPage() {
    * Fetch EMI plans whenever the selected variant changes
    */
   useEffect(() => {
-    if (!selectedVariant?.id) {
+  if (!selectedVariant?.id) {
+    return;
+  }
+
+  const loadEmiPlans = async () => {
+    try {
+      const response = await getEmiPlans(selectedVariant.id);
+      const plans = response?.data || [];
+
+      setEmiPlans(plans);
+    } catch (err) {
+      console.error("Error loading EMI plans:", err);
       setEmiPlans([]);
-      setSelectedPlanId(null);
-      return;
     }
+  };
 
-    const loadEmiPlans = async () => {
-      try {
-        const response = await getEmiPlans(selectedVariant.id);
-        const plans = response?.data || [];
+  loadEmiPlans();
+}, [selectedVariant]);
 
-        setEmiPlans(plans);
-
-        // Do not automatically select an EMI plan.
-        // The user must explicitly choose one.
-        setSelectedPlanId(null);
-      } catch (err) {
-        console.error("Error loading EMI plans:", err);
-
-        setEmiPlans([]);
-        setSelectedPlanId(null);
-      }
-    };
-
-    loadEmiPlans();
-  }, [selectedVariant]);
+  
 
   /*
    * Prices come directly from selected variant
@@ -183,9 +182,6 @@ function ProductDetailsPage() {
 
   /*
    * Currently selected EMI plan
-   *
-   * A plan only becomes currentPlan after
-   * the user explicitly selects it.
    */
   const currentPlan = useMemo(() => {
     if (
@@ -252,15 +248,14 @@ function ProductDetailsPage() {
    * Variants available for the currently selected color
    */
   const availableStorageVariants = useMemo(() => {
-    if (!selectedVariant?.color) {
-      return variants;
-    }
+  if (!selectedVariant?.color) {
+    return variants;
+  }
 
-    return variants.filter(
-      (variant) =>
-        variant.color === selectedVariant.color
-    );
-  }, [variants, selectedVariant?.color]);
+  return variants.filter(
+    (variant) => variant.color === selectedVariant.color
+  );
+}, [variants, selectedVariant]);
 
   /*
    * Select a color
@@ -274,8 +269,9 @@ function ProductDetailsPage() {
       setSelectedVariant(matchingVariant);
       setSelectedImageIndex(0);
 
-      // Reset EMI selection when variant changes
+      // Reset EMI flow when variant changes
       setSelectedPlanId(null);
+      setShowConfirmation(false);
     }
   };
 
@@ -292,9 +288,38 @@ function ProductDetailsPage() {
       setSelectedVariant(matchingVariant);
       setSelectedImageIndex(0);
 
-      // Reset EMI selection when variant changes
+      // Reset EMI flow when variant changes
       setSelectedPlanId(null);
+      setShowConfirmation(false);
     }
+  };
+
+  /*
+   * Proceed with selected EMI plan
+   */
+  const handleProceed = () => {
+    // Prevent proceeding without selecting an EMI plan
+    if (!currentPlan) {
+      return;
+    }
+
+    setShowConfirmation(true);
+  };
+
+  /*
+   * Cancel confirmation
+   */
+  const handleCancelConfirmation = () => {
+    setShowConfirmation(false);
+  };
+
+  /*
+   * Confirm selected EMI plan
+   *
+   * No backend order/payment is required for this assignment.
+   */
+  const handleConfirmSelection = () => {
+    setShowConfirmation(false);
   };
 
   /*
@@ -374,147 +399,299 @@ function ProductDetailsPage() {
   }
 
   return (
-    <div className="h-full w-full bg-[#f8faf9] overflow-y-auto custom-scrollbar">
-      <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-5">
+    <>
+      <div className="h-full w-full bg-[#f8faf9] overflow-y-auto custom-scrollbar">
+        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-5">
 
-        {/* Breadcrumbs */}
-        <nav className="flex items-center gap-2 text-xs sm:text-[13px] text-gray-500 mb-5 font-normal">
-          <Link
-            to="/"
-            className="hover:text-emerald-700 transition"
-          >
-            Home
-          </Link>
+          {/* Breadcrumbs */}
+          <nav className="flex items-center gap-2 text-xs sm:text-[13px] text-gray-500 mb-5 font-normal">
+            <Link
+              to="/"
+              className="hover:text-emerald-700 transition"
+            >
+              Home
+            </Link>
 
-          <span>›</span>
+            <span>›</span>
 
-          <Link
-            to="/"
-            className="hover:text-emerald-700 transition"
-          >
-            Mobiles
-          </Link>
+            <Link
+              to="/"
+              className="hover:text-emerald-700 transition"
+            >
+              Mobiles
+            </Link>
 
-          <span>›</span>
+            <span>›</span>
 
-          <span className="text-gray-600">
-            {product.brand}
-          </span>
+            <span className="text-gray-600">
+              {product.brand}
+            </span>
 
-          <span>›</span>
+            <span>›</span>
 
-          <span className="font-semibold text-gray-900">
-            {product.name}
-          </span>
-        </nav>
+            <span className="font-semibold text-gray-900">
+              {product.name}
+            </span>
+          </nav>
 
-        {/* Main product layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start pb-16">
+          {/* Main product layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start pb-16">
 
-          {/* LEFT COLUMN */}
-          <div className="lg:col-span-6 xl:col-span-7 flex flex-col gap-5">
+            {/* LEFT COLUMN */}
+            <div className="lg:col-span-6 xl:col-span-7 flex flex-col gap-5">
 
-            {/* Product Gallery */}
-            {hasProductImages ? (
-              <ProductGallery
-                galleryImages={galleryImages}
-                selectedImageIndex={selectedImageIndex}
-                setSelectedImageIndex={setSelectedImageIndex}
-                productName={product.name}
+              {/* Product Gallery */}
+              {hasProductImages ? (
+                <ProductGallery
+                  galleryImages={galleryImages}
+                  selectedImageIndex={selectedImageIndex}
+                  setSelectedImageIndex={setSelectedImageIndex}
+                  productName={product.name}
+                />
+              ) : (
+                <div className="flex aspect-square items-center justify-center rounded-xl bg-gray-100 text-gray-500">
+                  Product image unavailable
+                </div>
+              )}
+
+              {/* Variant Selector */}
+              <VariantSelector
+                distinctColors={distinctColors}
+                selectedColor={selectedVariant?.color}
+                onColorSelect={handleColorSelect}
+                availableStorageVariants={
+                  availableStorageVariants
+                }
+                selectedVariant={selectedVariant}
+                onVariantSelect={handleVariantSelect}
               />
-            ) : (
-              <div className="flex aspect-square items-center justify-center rounded-xl bg-gray-100 text-gray-500">
-                Product image unavailable
-              </div>
-            )}
+            </div>
 
-            {/* Variant Selector */}
-            <VariantSelector
-              distinctColors={distinctColors}
-              selectedColor={selectedVariant?.color}
-              onColorSelect={handleColorSelect}
-              availableStorageVariants={
-                availableStorageVariants
-              }
-              selectedVariant={selectedVariant}
-              onVariantSelect={handleVariantSelect}
-            />
-          </div>
+            {/* RIGHT COLUMN */}
+            <div className="lg:col-span-6 xl:col-span-5 flex flex-col gap-5">
 
-          {/* RIGHT COLUMN */}
-          <div className="lg:col-span-6 xl:col-span-5 flex flex-col gap-5">
+              {/* Product overview and pricing */}
+              <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-[0_2px_14px_rgba(0,0,0,0.04)]">
 
-            {/* Product overview and pricing */}
-            <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-[0_2px_14px_rgba(0,0,0,0.04)]">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-950 tracking-tight leading-snug">
+                  {product.brand} {product.name}
 
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-950 tracking-tight leading-snug">
-                {product.brand} {product.name}
+                  {variantTitleDetails && (
+                    <span className="font-semibold text-gray-900">
+                      {" "}
+                      ({variantTitleDetails})
+                    </span>
+                  )}
+                </h1>
 
-                {variantTitleDetails && (
-                  <span className="font-semibold text-gray-900">
-                    {" "}
-                    ({variantTitleDetails})
-                  </span>
+                {variantSpecsText && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {variantSpecsText}
+                  </p>
                 )}
-              </h1>
+
+                {Number(product.sold_count) > 0 && (
+                  <div className="flex items-center gap-1.5 mt-2.5">
+                    <span className="text-xs font-semibold text-gray-800 flex items-center gap-1">
+                      <span>🔥</span>
+
+                      <span>
+                        {product.sold_count} sold
+                      </span>
+                    </span>
+                  </div>
+                )}
+
+                <div className="mt-3.5 flex items-baseline gap-2.5 flex-wrap">
+                  {hasPrice ? (
+                    <span className="text-2xl sm:text-3xl font-black text-gray-950">
+                      ₹{formatCurrency(price)}
+                    </span>
+                  ) : (
+                    <span className="text-lg font-semibold text-gray-500">
+                      Price on request
+                    </span>
+                  )}
+
+                  {hasMrp && mrp > price && (
+                    <span className="text-base sm:text-lg text-gray-400 line-through font-normal">
+                      ₹{formatCurrency(mrp)}
+                    </span>
+                  )}
+
+                  {discountPercent > 0 && (
+                    <span className="inline-flex items-center rounded-sm bg-[#eaf8ee] px-2 py-0.5 text-xs font-bold text-emerald-800 uppercase tracking-tight border border-emerald-200/60">
+                      {discountPercent}% OFF
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* EMI Plans */}
+              <EmiPlanCard
+                upfrontPayment={upfrontPayment}
+                emiStartDateFormatted={emiStartDateFormatted}
+                emiPlans={emiPlans}
+                selectedPlanId={selectedPlanId}
+                onSelectPlan={setSelectedPlanId}
+                currentPlan={currentPlan}
+                onProceed={handleProceed}
+              />
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmation && currentPlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+
+            {/* Header */}
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-950">
+                  Confirm EMI Plan
+                </h2>
+
+                <p className="mt-1 text-sm text-gray-500">
+                  Review your selected product and EMI plan.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleCancelConfirmation}
+                className="rounded-lg px-2 py-1 text-xl text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                aria-label="Close confirmation"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Product */}
+            <div className="mt-5 rounded-xl bg-gray-50 p-4">
+              <p className="text-xs font-medium text-gray-500">
+                Product
+              </p>
+
+              <p className="mt-1 text-base font-bold text-gray-900">
+                {product.brand} {product.name}
+              </p>
 
               {variantSpecsText && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="mt-1 text-xs text-gray-500">
                   {variantSpecsText}
                 </p>
               )}
 
-              {Number(product.sold_count) > 0 && (
-                <div className="flex items-center gap-1.5 mt-2.5">
-                  <span className="text-xs font-semibold text-gray-800 flex items-center gap-1">
-                    <span>🔥</span>
+              {price !== null && (
+                <p className="mt-2 text-sm font-semibold text-gray-900">
+                  ₹{formatCurrency(price)}
+                </p>
+              )}
+            </div>
 
-                    <span>
-                      {product.sold_count} sold
-                    </span>
-                  </span>
+            {/* EMI details */}
+            <div className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50 p-4">
+
+              <p className="text-xs font-medium text-emerald-700">
+                Selected EMI Plan
+              </p>
+
+              <div className="mt-2 grid grid-cols-2 gap-3">
+
+                <div>
+                  <p className="text-[11px] text-gray-500">
+                    Monthly payment
+                  </p>
+
+                  <p className="text-sm font-bold text-gray-900">
+                    ₹{formatCurrency(currentPlan.monthly_payment)}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-[11px] text-gray-500">
+                    Tenure
+                  </p>
+
+                  <p className="text-sm font-bold text-gray-900">
+                    {currentPlan.tenure_months} months
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-[11px] text-gray-500">
+                    Interest
+                  </p>
+
+                  <p className="text-sm font-bold text-gray-900">
+                    {Number(currentPlan.interest_rate) === 0
+                      ? "0%"
+                      : `${currentPlan.interest_rate}%`}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-[11px] text-gray-500">
+                    Cashback
+                  </p>
+
+                  <p className="text-sm font-bold text-emerald-700">
+                    {Number(currentPlan.cashback_amount) > 0
+                      ? `₹${formatCurrency(
+                          currentPlan.cashback_amount
+                        )}`
+                      : "None"}
+                  </p>
+                </div>
+              </div>
+
+              {upfrontPayment !== null && (
+                <div className="mt-3 border-t border-emerald-100 pt-3">
+                  <p className="text-xs text-gray-500">
+                    Pay now
+                  </p>
+
+                  <p className="text-base font-bold text-gray-900">
+                    ₹{formatCurrency(upfrontPayment)}
+                  </p>
                 </div>
               )}
 
-              <div className="mt-3.5 flex items-baseline gap-2.5 flex-wrap">
-                {hasPrice ? (
-                  <span className="text-2xl sm:text-3xl font-black text-gray-950">
-                    ₹{formatCurrency(price)}
-                  </span>
-                ) : (
-                  <span className="text-lg font-semibold text-gray-500">
-                    Price on request
-                  </span>
-                )}
-
-                {hasMrp && mrp > price && (
-                  <span className="text-base sm:text-lg text-gray-400 line-through font-normal">
-                    ₹{formatCurrency(mrp)}
-                  </span>
-                )}
-
-                {discountPercent > 0 && (
-                  <span className="inline-flex items-center rounded-sm bg-[#eaf8ee] px-2 py-0.5 text-xs font-bold text-emerald-800 uppercase tracking-tight border border-emerald-200/60">
-                    {discountPercent}% OFF
-                  </span>
-                )}
-              </div>
+              {emiStartDateFormatted && (
+                <p className="mt-2 text-xs text-emerald-700">
+                  EMIs starting {emiStartDateFormatted}
+                </p>
+              )}
             </div>
 
-            {/* EMI Plans */}
-            <EmiPlanCard
-              upfrontPayment={upfrontPayment}
-              emiStartDateFormatted={emiStartDateFormatted}
-              emiPlans={emiPlans}
-              selectedPlanId={selectedPlanId}
-              onSelectPlan={setSelectedPlanId}
-              currentPlan={currentPlan}
-            />
+            {/* Actions */}
+            <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
 
+              <button
+                type="button"
+                onClick={handleCancelConfirmation}
+                className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleConfirmSelection}
+                className="rounded-xl bg-black px-4 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
+              >
+                Confirm Selection
+              </button>
+
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
 

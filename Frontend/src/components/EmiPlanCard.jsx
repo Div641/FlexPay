@@ -9,6 +9,7 @@ function EmiPlanCard({
   selectedPlanId,
   onSelectPlan,
   currentPlan,
+  onProceed,
 }) {
   if (emiPlans.length === 0) {
     return (
@@ -20,7 +21,6 @@ function EmiPlanCard({
 
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-[0_2px_14px_rgba(0,0,0,0.04)] sm:p-6">
-
       {/* Upfront Payment */}
       {upfrontPayment !== null && upfrontPayment !== undefined && (
         <div className="border-b border-gray-100 pb-3">
@@ -161,6 +161,20 @@ function EmiPlanCard({
           )}
         </div>
       )}
+
+      {/* Proceed Button */}
+      <button
+        type="button"
+        onClick={onProceed}
+        disabled={!currentPlan}
+        className={`mt-4 w-full rounded-xl px-5 py-3 text-sm font-bold transition-all duration-200 ${
+          currentPlan
+            ? "bg-black text-white hover:bg-gray-800 active:scale-[0.99]"
+            : "cursor-not-allowed bg-gray-200 text-gray-400"
+        }`}
+      >
+        Proceed with this EMI plan
+      </button>
     </div>
   );
 }
