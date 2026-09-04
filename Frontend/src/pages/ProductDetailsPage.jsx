@@ -203,8 +203,10 @@ function ProductDetailsPage() {
    * Images come directly from the selected variant
    */
   const galleryImages = Array.isArray(selectedVariant?.image_urls)
-    ? selectedVariant.image_urls
-    : [];
+  ? selectedVariant.image_urls.filter(Boolean)
+  : [];
+
+    const hasProductImages = galleryImages.length > 0;
 
   /*
    * Get unique colors from available variants
@@ -378,12 +380,18 @@ function ProductDetailsPage() {
           {/* LEFT COLUMN */}
           <div className="lg:col-span-6 xl:col-span-7 flex flex-col gap-5">
 
-            <ProductGallery
-              galleryImages={galleryImages}
-              selectedImageIndex={selectedImageIndex}
-              setSelectedImageIndex={setSelectedImageIndex}
-              productName={product.name}
-            />
+            {hasProductImages ? (
+                <ProductGallery
+                    galleryImages={galleryImages}
+                    selectedImageIndex={selectedImageIndex}
+                    setSelectedImageIndex={setSelectedImageIndex}
+                    productName={product.name}
+                />
+                ) : (
+                <div className="flex aspect-square items-center justify-center rounded-xl bg-gray-100 text-gray-500">
+                    Product image unavailable
+                </div>
+            )}
 
             <VariantSelector
               distinctColors={distinctColors}

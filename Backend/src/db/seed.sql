@@ -234,6 +234,99 @@ VALUES
 -- product_variants.id values.
 
 
+WITH color_images (slug, color, image_urls) AS (
+    VALUES
+    -- Apple iPhone 16
+    ('iphone-16', 'Black', jsonb_build_array('/images/products/iphone16-black-side.jpg', '/images/products/iphone16-black-back.jpg', '/images/products/iphone16-black-set.jpg')),
+    ('iphone-16', 'White', jsonb_build_array('/images/products/iphone16-white-side.jpg', '/images/products/iphone16-white-back.jpg', '/images/products/iphone16-white-set.jpg')),
+    ('iphone-16', 'Pink', jsonb_build_array('/images/products/iphone16-pink-side.webp', '/images/products/iphone16-pink-back.webp', '/images/products/iphone16-pink-set.webp')),
+
+    -- Apple iPhone 16 Pro
+    ('iphone-16-pro', 'Black Titanium', jsonb_build_array('/images/products/iphone-16-pro-bt-back.webp', '/images/products/iphone-16-pro-bt-side.webp')),
+    ('iphone-16-pro', 'White Titanium', jsonb_build_array('/images/products/iphone-16-pro-wt-back.webp', '/images/products/iphone-16-pro-wt-side.webp', '/images/products/iphone-16-pro-wt-set.webp')),
+    ('iphone-16-pro', 'Desert Titanium', jsonb_build_array('/images/products/iphone-16-pro-dt-back.webp', '/images/products/iphone-16-pro-dt-side.webp', '/images/products/iphone-16-pro-dt-set.jpeg')),
+
+    -- Apple iPhone 16 Pro Max
+    ('iphone-16-pro-max', 'Black Titanium', jsonb_build_array('/images/products/iphone-16-pro-max-bt-back.webp', '/images/products/iphone-16-pro-max-bt-set.webp', '/images/products/iphone-16-pro-max-bt-side.webp')),
+    ('iphone-16-pro-max', 'White Titanium', jsonb_build_array('/images/products/iphone-16-pro-max-wt-side.webp', '/images/products/iphone-16-pro-max-wt-back.webp', '/images/products/iphone-16-pro-max-wt-set.webp')),
+    ('iphone-16-pro-max', 'Desert Titanium', jsonb_build_array('/images/products/iphone-16-pro-max-dt-side.webp', '/images/products/iphone-16-pro-max-dt-back.webp', '/images/products/iphone-16-pro-max-dt-set.webp')),
+
+    -- Apple iPhone 15
+    ('iphone-15', 'Black', jsonb_build_array('/images/products/iphone-15-black-back.webp', '/images/products/iphone-15-black-side.webp', '/images/products/iphone-15-black-set.webp')),
+    ('iphone-15', 'Blue', jsonb_build_array('/images/products/iphone-15-blue-back.webp', '/images/products/iphone-15-blue-side.webp')),
+    ('iphone-15', 'Green', jsonb_build_array('/images/products/iphone-15-green-back.webp', '/images/products/iphone-15-green-side.webp', '/images/products/iphone-15-green-set.webp')),
+
+    -- Samsung Galaxy S25
+    ('samsung-galaxy-s25', 'Navy', jsonb_build_array('/images/products/samsung-galaxy-s25-navy.webp')),
+    ('samsung-galaxy-s25', 'Silver', jsonb_build_array('/images/products/samsung-galaxy-s25-silver.webp')),
+    ('samsung-galaxy-s25', 'Blue', jsonb_build_array('/images/products/samsung-galaxy-s25-blue.webp')),
+
+    -- Samsung Galaxy S25 Ultra
+    ('samsung-galaxy-s25-ultra', 'Titanium Black', jsonb_build_array('/images/products/samsung-galaxy-s25-ultra-tb.webp')),
+    ('samsung-galaxy-s25-ultra', 'Titanium Gray', jsonb_build_array('/images/products/samsung-galaxy-s25-ultra-tg.webp')),
+    ('samsung-galaxy-s25-ultra', 'Titanium Silver', jsonb_build_array('/images/products/samsung-galaxy-s25-ultra-ts.webp')),
+
+    -- Samsung Galaxy S24
+    ('samsung-galaxy-s24', 'Black', jsonb_build_array('/images/products/samsung-galaxy-s24-black.webp')),
+    ('samsung-galaxy-s24', 'Violet', jsonb_build_array('/images/products/samsung-galaxy-s24-violet.webp')),
+    ('samsung-galaxy-s24', 'Yellow', jsonb_build_array('/images/products/samsung-galaxy-s24-yellow.webp')),
+
+    -- Samsung Galaxy A56
+    ('samsung-galaxy-a56', 'Graphite', jsonb_build_array('/images/products/samsung-galaxy-a56-graphite.webp')),
+    ('samsung-galaxy-a56', 'Light Gray', jsonb_build_array('/images/products/samsung-galaxy-a56-lightgrey.jpg')),
+    ('samsung-galaxy-a56', 'Olive', jsonb_build_array('/images/products/samsung-galaxy-a56-olive.jpg')),
+
+    -- Google Pixel 9 (single image available for all colors)
+    ('google-pixel-9', 'Obsidian', jsonb_build_array('/images/products/google-pixel-9.webp')),
+    ('google-pixel-9', 'Porcelain', jsonb_build_array('/images/products/google-pixel-9.webp')),
+    ('google-pixel-9', 'Wintergreen', jsonb_build_array('/images/products/google-pixel-9.webp')),
+
+    -- Google Pixel 9 Pro (single image available for all colors)
+    ('google-pixel-9-pro', 'Obsidian', jsonb_build_array('/images/products/google-pixel-9-pro.webp')),
+    ('google-pixel-9-pro', 'Porcelain', jsonb_build_array('/images/products/google-pixel-9-pro.webp')),
+    ('google-pixel-9-pro', 'Hazel', jsonb_build_array('/images/products/google-pixel-9-pro.webp')),
+
+    -- Google Pixel 9 Pro XL (single image available for all colors)
+    ('google-pixel-9-pro-xl', 'Obsidian', jsonb_build_array('/images/products/google-pixel-9-pro-xl.webp')),
+    ('google-pixel-9-pro-xl', 'Porcelain', jsonb_build_array('/images/products/google-pixel-9-pro-xl.webp')),
+    ('google-pixel-9-pro-xl', 'Hazel', jsonb_build_array('/images/products/google-pixel-9-pro-xl.webp')),
+
+    -- Google Pixel 8 (single image available for all colors)
+    ('google-pixel-8', 'Obsidian', jsonb_build_array('/images/products/google-pixel-8.jpeg')),
+    ('google-pixel-8', 'Hazel', jsonb_build_array('/images/products/google-pixel-8.jpeg')),
+    ('google-pixel-8', 'Rose', jsonb_build_array('/images/products/google-pixel-8.jpeg')),
+
+    -- OnePlus 13 (single image available for all colors)
+    ('oneplus-13', 'Black Eclipse', jsonb_build_array('/images/products/oneplus-13.webp')),
+    ('oneplus-13', 'Midnight Ocean', jsonb_build_array('/images/products/oneplus-13.webp')),
+    ('oneplus-13', 'White', jsonb_build_array('/images/products/oneplus-13.webp')),
+
+    -- OnePlus 13R (single image available for all colors)
+    ('oneplus-13r', 'Black', jsonb_build_array('/images/products/oneplus-13r.webp')),
+    ('oneplus-13r', 'Blue', jsonb_build_array('/images/products/oneplus-13r.webp')),
+    ('oneplus-13r', 'Gray', jsonb_build_array('/images/products/oneplus-13r.webp')),
+
+    -- Xiaomi 15 (single image available for all colors)
+    ('xiaomi-15', 'Black', jsonb_build_array('/images/products/xiomi-15.webp')),
+    ('xiaomi-15', 'White', jsonb_build_array('/images/products/xiomi-15.webp')),
+    ('xiaomi-15', 'Green', jsonb_build_array('/images/products/xiomi-15.webp')),
+
+    -- Xiaomi 15 Ultra (single image available for all colors)
+    ('xiaomi-15-ultra', 'Black', jsonb_build_array('/images/products/xiomi-15-ultra.webp')),
+    ('xiaomi-15-ultra', 'White', jsonb_build_array('/images/products/xiomi-15-ultra.webp')),
+    ('xiaomi-15-ultra', 'Silver', jsonb_build_array('/images/products/xiomi-15-ultra.webp')),
+
+    -- Nothing Phone (3) (single image available for all colors)
+    ('nothing-phone-3', 'Black', jsonb_build_array('/images/products/nothing-phone-3.webp')),
+    ('nothing-phone-3', 'White', jsonb_build_array('/images/products/nothing-phone-3.webp')),
+    ('nothing-phone-3', 'Gray', jsonb_build_array('/images/products/nothing-phone-3.webp')),
+
+    -- Motorola Edge 60 Pro (single image available for all colors)
+    ('motorola-edge-60-pro', 'Black', jsonb_build_array('/images/products/motorola-edge-60-pro.webp')),
+    ('motorola-edge-60-pro', 'Blue', jsonb_build_array('/images/products/motorola-edge-60-pro.webp')),
+    ('motorola-edge-60-pro', 'Lavender', jsonb_build_array('/images/products/motorola-edge-60-pro.webp'))
+)
+
 INSERT INTO product_variants
 (
     product_id,
@@ -250,11 +343,11 @@ SELECT
     p.id,
     v.ram,
     v.storage,
-    c.color,
+    ci.color,
     NULL,
     v.mrp,
     v.price,
-    jsonb_build_array(v.image_path)
+    ci.image_urls
 
 FROM
 (
@@ -267,9 +360,7 @@ FROM
         '8GB',
         '128GB',
         74900,
-        69900,
-        '/images/products/iphone-16-128.jpg',
-        ARRAY['Black', 'White', 'Pink']
+        69900
     ),
 
     (
@@ -277,9 +368,7 @@ FROM
         '8GB',
         '256GB',
         84900,
-        79900,
-        '/images/products/iphone-16-256.jpg',
-        ARRAY['Black', 'White', 'Pink']
+        79900
     ),
 
     (
@@ -287,9 +376,7 @@ FROM
         '8GB',
         '128GB',
         129900,
-        119900,
-        '/images/products/iphone-16-pro-128.jpg',
-        ARRAY['Black Titanium', 'White Titanium', 'Desert Titanium']
+        119900
     ),
 
     (
@@ -297,9 +384,7 @@ FROM
         '8GB',
         '256GB',
         139900,
-        129900,
-        '/images/products/iphone-16-pro-256.jpg',
-        ARRAY['Black Titanium', 'White Titanium', 'Desert Titanium']
+        129900
     ),
 
     (
@@ -307,9 +392,7 @@ FROM
         '8GB',
         '256GB',
         154900,
-        144900,
-        '/images/products/iphone-16-pro-max-256.jpg',
-        ARRAY['Black Titanium', 'White Titanium', 'Desert Titanium']
+        144900
     ),
 
     (
@@ -317,9 +400,7 @@ FROM
         '6GB',
         '128GB',
         69900,
-        59900,
-        '/images/products/iphone-15-128.jpg',
-        ARRAY['Black', 'Blue', 'Green']
+        59900
     ),
 
     (
@@ -327,9 +408,7 @@ FROM
         '6GB',
         '256GB',
         79900,
-        69900,
-        '/images/products/iphone-15-256.jpg',
-        ARRAY['Black', 'Blue', 'Green']
+        69900
     ),
 
 
@@ -340,9 +419,7 @@ FROM
         '12GB',
         '128GB',
         79999,
-        74999,
-        '/images/products/galaxy-s25-128.jpg',
-        ARRAY['Navy', 'Silver', 'Blue']
+        74999
     ),
 
     (
@@ -350,9 +427,7 @@ FROM
         '12GB',
         '256GB',
         85999,
-        80999,
-        '/images/products/galaxy-s25-256.jpg',
-        ARRAY['Navy', 'Silver', 'Blue']
+        80999
     ),
 
     (
@@ -360,9 +435,7 @@ FROM
         '12GB',
         '256GB',
         139999,
-        129999,
-        '/images/products/galaxy-s25-ultra-256.jpg',
-        ARRAY['Titanium Black', 'Titanium Gray', 'Titanium Silver']
+        129999
     ),
 
     (
@@ -370,9 +443,7 @@ FROM
         '12GB',
         '512GB',
         151999,
-        141999,
-        '/images/products/galaxy-s25-ultra-512.jpg',
-        ARRAY['Titanium Black', 'Titanium Gray', 'Titanium Silver']
+        141999
     ),
 
     (
@@ -380,9 +451,7 @@ FROM
         '8GB',
         '128GB',
         69999,
-        64999,
-        '/images/products/galaxy-s24-128.jpg',
-        ARRAY['Black', 'Violet', 'Yellow']
+        64999
     ),
 
     (
@@ -390,9 +459,7 @@ FROM
         '8GB',
         '256GB',
         75999,
-        70999,
-        '/images/products/galaxy-s24-256.jpg',
-        ARRAY['Black', 'Violet', 'Yellow']
+        70999
     ),
 
     (
@@ -400,9 +467,7 @@ FROM
         '8GB',
         '128GB',
         44999,
-        41999,
-        '/images/products/galaxy-a56-128.jpg',
-        ARRAY['Graphite', 'Light Gray', 'Olive']
+        41999
     ),
 
     (
@@ -410,9 +475,7 @@ FROM
         '8GB',
         '256GB',
         47999,
-        44999,
-        '/images/products/galaxy-a56-256.jpg',
-        ARRAY['Graphite', 'Light Gray', 'Olive']
+        44999
     ),
 
 
@@ -423,9 +486,7 @@ FROM
         '12GB',
         '128GB',
         84999,
-        79999,
-        '/images/products/pixel-9-128.jpg',
-        ARRAY['Obsidian', 'Porcelain', 'Wintergreen']
+        79999
     ),
 
     (
@@ -433,9 +494,7 @@ FROM
         '12GB',
         '256GB',
         94999,
-        89999,
-        '/images/products/pixel-9-256.jpg',
-        ARRAY['Obsidian', 'Porcelain', 'Wintergreen']
+        89999
     ),
 
     (
@@ -443,9 +502,7 @@ FROM
         '16GB',
         '256GB',
         114999,
-        109999,
-        '/images/products/pixel-9-pro-256.jpg',
-        ARRAY['Obsidian', 'Porcelain', 'Hazel']
+        109999
     ),
 
     (
@@ -453,9 +510,7 @@ FROM
         '16GB',
         '256GB',
         129999,
-        124999,
-        '/images/products/pixel-9-pro-xl-256.jpg',
-        ARRAY['Obsidian', 'Porcelain', 'Hazel']
+        124999
     ),
 
     (
@@ -463,9 +518,7 @@ FROM
         '8GB',
         '128GB',
         74999,
-        69999,
-        '/images/products/pixel-8-128.jpg',
-        ARRAY['Obsidian', 'Hazel', 'Rose']
+        69999
     ),
 
     (
@@ -473,9 +526,7 @@ FROM
         '8GB',
         '256GB',
         84999,
-        79999,
-        '/images/products/pixel-8-256.jpg',
-        ARRAY['Obsidian', 'Hazel', 'Rose']
+        79999
     ),
 
 
@@ -486,9 +537,7 @@ FROM
         '12GB',
         '256GB',
         74999,
-        69999,
-        '/images/products/oneplus-13-256.jpg',
-        ARRAY['Black Eclipse', 'Midnight Ocean', 'White']
+        69999
     ),
 
     (
@@ -496,9 +545,7 @@ FROM
         '16GB',
         '512GB',
         81999,
-        76999,
-        '/images/products/oneplus-13-512.jpg',
-        ARRAY['Black Eclipse', 'Midnight Ocean', 'White']
+        76999
     ),
 
     (
@@ -506,9 +553,7 @@ FROM
         '12GB',
         '256GB',
         47999,
-        42999,
-        '/images/products/oneplus-13r-256.jpg',
-        ARRAY['Black', 'Blue', 'Gray']
+        42999
     ),
 
 
@@ -519,9 +564,7 @@ FROM
         '12GB',
         '512GB',
         69999,
-        64999,
-        '/images/products/xiaomi-15-512.jpg',
-        ARRAY['Black', 'White', 'Green']
+        64999
     ),
 
     (
@@ -529,9 +572,7 @@ FROM
         '16GB',
         '512GB',
         114999,
-        109999,
-        '/images/products/xiaomi-15-ultra-512.jpg',
-        ARRAY['Black', 'White', 'Silver']
+        109999
     ),
 
 
@@ -542,9 +583,7 @@ FROM
         '12GB',
         '256GB',
         84999,
-        79999,
-        '/images/products/nothing-phone-3-256.jpg',
-        ARRAY['Black', 'White', 'Gray']
+        79999
     ),
 
     (
@@ -552,9 +591,7 @@ FROM
         '16GB',
         '512GB',
         94999,
-        89999,
-        '/images/products/nothing-phone-3-512.jpg',
-        ARRAY['Black', 'White', 'Gray']
+        89999
     ),
 
 
@@ -565,9 +602,7 @@ FROM
         '8GB',
         '256GB',
         34999,
-        29999,
-        '/images/products/edge-60-pro-256.jpg',
-        ARRAY['Black', 'Blue', 'Lavender']
+        29999
     ),
 
     (
@@ -575,9 +610,7 @@ FROM
         '12GB',
         '256GB',
         36999,
-        31999,
-        '/images/products/edge-60-pro-12gb-256.jpg',
-        ARRAY['Black', 'Blue', 'Lavender']
+        31999
     ),
 
     (
@@ -585,9 +618,7 @@ FROM
         '12GB',
         '512GB',
         38999,
-        33999,
-        '/images/products/edge-60-pro-512.jpg',
-        ARRAY['Black', 'Blue', 'Lavender']
+        33999
     )
 
 ) AS v(
@@ -595,15 +626,14 @@ FROM
     ram,
     storage,
     mrp,
-    price,
-    image_path,
-    colors
+    price
 )
 
 JOIN products p
     ON p.slug = v.slug
 
-CROSS JOIN LATERAL UNNEST(v.colors) AS c(color);
+JOIN color_images ci
+    ON ci.slug = v.slug;
 
 
 -- ============================================

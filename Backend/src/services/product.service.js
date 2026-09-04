@@ -12,7 +12,14 @@ export const getAllProducts = async () => {
       p.sold_count,
       p.seller_name,
       p.shipping_info,
-      MIN(v.price) AS starting_price
+      MIN(v.price) AS starting_price,
+      (
+        SELECT v2.image_urls->>0
+        FROM product_variants v2
+        WHERE v2.product_id = p.id AND v2.is_available = TRUE
+        ORDER BY v2.id
+        LIMIT 1
+      ) AS image_url
     FROM products p
     LEFT JOIN product_variants v
       ON p.id = v.product_id
