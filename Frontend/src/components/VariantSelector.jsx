@@ -1,19 +1,3 @@
-const COLOR_HEX_MAP = {
-  Silver: "#e3e4e6",
-  White: "#f5f5f7",
-  Black: "#1d1d1f",
-  SpaceBlack: "#252627",
-  NaturalTitanium: "#9b958c",
-  DesertTitanium: "#c59f80",
-  Titanium: "#9a968f",
-  Gold: "#fae7cf",
-  Orange: "#d76538",
-  Pink: "#fad2e1",
-  Blue: "#273b52",
-  Ultramarine: "#2e3869",
-  Teal: "#38656d",
-};
-
 function VariantSelector({
   distinctColors = [],
   selectedColor,
@@ -22,59 +6,76 @@ function VariantSelector({
   selectedVariant,
   onVariantSelect,
 }) {
+  const hasColors = distinctColors.length > 0;
+  const hasVariants = availableStorageVariants.length > 0;
+
+  if (!hasColors && !hasVariants) {
+    return null;
+  }
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-      {/* Color Swatches */}
-      <div className="flex flex-col gap-2">
-        <span className="text-sm font-bold text-gray-900">Color</span>
-        <div className="flex items-center gap-3">
-          {distinctColors.map((col) => {
-            const isSelected = selectedColor === col;
-            const hex =
-              COLOR_HEX_MAP[col] ||
-              COLOR_HEX_MAP[col.replace(/\s+/g, "")] ||
-              "#9e9e9e";
+    <div className="grid grid-cols-1 gap-4 pt-1 sm:grid-cols-2">
 
-            return (
-              <button
-                key={col}
-                type="button"
-                onClick={() => onColorSelect(col)}
-                title={col}
-                className={`w-7 h-7 rounded-full border border-gray-300 transition-all cursor-pointer ${
-                  isSelected
-                    ? "ring-2 ring-emerald-600 ring-offset-2 scale-105"
-                    : "hover:scale-105"
-                }`}
-                style={{ backgroundColor: hex }}
-              />
-            );
-          })}
-        </div>
-      </div>
+      {/* Color */}
+      {hasColors && (
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-bold text-gray-900">
+            Color{selectedColor ? `: ${selectedColor}` : ""}
+          </span>
 
-      {/* Variant Dropdown */}
-      <div className="flex flex-col gap-2">
-        <span className="text-sm font-bold text-gray-900">Variant</span>
-        <div className="relative">
-          <select
-            value={selectedVariant?.id || ""}
-            onChange={(e) => onVariantSelect(e.target.value)}
-            className="w-full appearance-none rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-xs sm:text-[13px] font-medium text-gray-800 shadow-2xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer pr-9"
-          >
-            {availableStorageVariants.map((v) => (
-              <option key={v.id} value={v.id}>
-                Storage: {v.storage || "256 GB"}, RAM: {v.ram || "null"}
-              </option>
-            ))}
-          </select>
-          <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-            </svg>
+          <div className="flex flex-wrap gap-2">
+            {distinctColors.map((color) => {
+              const isSelected = selectedColor === color;
+
+              return (
+                <button
+                  key={color}
+                  type="button"
+                  onClick={() => onColorSelect(color)}
+                  className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
+                    isSelected
+                      ? "border-emerald-700 bg-emerald-50 text-emerald-800 ring-1 ring-emerald-700"
+                      : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  {color}
+                </button>
+              );
+            })}
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Variant */}
+      {hasVariants && (
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-bold text-gray-900">
+            Variant
+          </span>
+
+          <select
+            value={selectedVariant?.id || ""}
+            onChange={(event) => onVariantSelect(event.target.value)}
+            className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-xs font-medium text-gray-800 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 sm:text-[13px]"
+          >
+            {availableStorageVariants.map((variant) => {
+              const specs = [
+                variant.storage && `Storage: ${variant.storage}`,
+                variant.ram && `RAM: ${variant.ram}`,
+                variant.finish && `Finish: ${variant.finish}`,
+              ]
+                .filter(Boolean)
+                .join(", ");
+
+              return (
+                <option key={variant.id} value={variant.id}>
+                  {specs || `Variant #${variant.id}`}
+                </option>
+              );
+            })}
+          </select>
+        </div>
+      )}
     </div>
   );
 }

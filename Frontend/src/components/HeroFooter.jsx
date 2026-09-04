@@ -58,21 +58,16 @@ function HeroFooter() {
         <div className="relative z-10 mx-auto max-w-[1440px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Column 1: Company Info */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 p-1.5 backdrop-blur-xs">
-                <img
-                  src="/images/logo.png"
-                  alt="FlexPay"
-                  className="h-full w-full object-contain brightness-0 invert"
-                  onError={(e) => {
-                    e.target.style.display = "none";
-                  }}
-                />
-              </div>
-              <span className="text-xl font-black tracking-tight text-white">
-                Flex<span className="text-[#a5f3bc]">Pay</span>
+            <Link to="/" className="flex items-center gap-2.5 group">
+              <img
+                src="/images/logo.png"
+                alt="FlexPay Logo"
+                className="h-8 sm:h-9 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+              />
+              <span className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                FlexPay
               </span>
-            </div>
+            </Link>
 
             <p className="text-xs font-semibold text-emerald-200/90 tracking-wide">
               FlexPay Credit Advisory Private Limited

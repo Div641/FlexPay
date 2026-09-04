@@ -28,6 +28,7 @@ const formatEmiDate = (dateString) => {
 
   try {
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
 
     const day = date.getDate();
 
@@ -79,7 +80,7 @@ function ProductDetailsPage() {
   const [error, setError] = useState("");
 
   /*
-   * Fetch product and variants
+   * Fetch product and variants from API
    */
   useEffect(() => {
     const loadProductData = async () => {
@@ -99,7 +100,6 @@ function ProductDetailsPage() {
         setProduct(productResponse.data);
 
         const productVariants = variantsResponse?.data || [];
-
         setVariants(productVariants);
 
         if (productVariants.length > 0) {
@@ -126,7 +126,7 @@ function ProductDetailsPage() {
    * Fetch EMI plans whenever the selected variant changes
    */
   useEffect(() => {
-    if (!selectedVariant) {
+    if (!selectedVariant?.id) {
       setEmiPlans([]);
       setSelectedPlanId(null);
       return;
@@ -135,17 +135,10 @@ function ProductDetailsPage() {
     const loadEmiPlans = async () => {
       try {
         const response = await getEmiPlans(selectedVariant.id);
-
         const plans = response?.data || [];
 
         setEmiPlans(plans);
-
-        const defaultPlan =
-          plans.find(
-            (plan) => Number(plan.tenure_months) === 6
-          ) || plans[0];
-
-        setSelectedPlanId(defaultPlan?.id || null);
+        setSelectedPlanId(plans[0]?.id || null);
       } catch (err) {
         console.error("Error loading EMI plans:", err);
 
@@ -158,14 +151,21 @@ function ProductDetailsPage() {
   }, [selectedVariant]);
 
   /*
-   * Current price and MRP come directly from selected variant
+   * Prices come directly from selected variant
    */
-  const price = Number(selectedVariant?.price || 0);
+  const rawPrice = selectedVariant?.price;
+  const rawMrp = selectedVariant?.mrp;
 
-  const mrp = Number(selectedVariant?.mrp || 0);
+  const hasPrice =
+    rawPrice !== null && rawPrice !== undefined && !isNaN(rawPrice);
+  const hasMrp =
+    rawMrp !== null && rawMrp !== undefined && !isNaN(rawMrp);
+
+  const price = hasPrice ? Number(rawPrice) : null;
+  const mrp = hasMrp ? Number(rawMrp) : null;
 
   const discountPercent =
-    mrp > price
+    hasPrice && hasMrp && mrp > price
       ? Math.round(((mrp - price) / mrp) * 100)
       : 0;
 
@@ -173,30 +173,38 @@ function ProductDetailsPage() {
    * Currently selected EMI plan
    */
   const currentPlan = useMemo(() => {
+    if (!emiPlans || emiPlans.length === 0) return null;
     return (
-      emiPlans.find(
-        (plan) => plan.id === selectedPlanId
-      ) || emiPlans[0]
+      emiPlans.find((plan) => plan.id === selectedPlanId) ||
+      emiPlans[0] ||
+      null
     );
   }, [emiPlans, selectedPlanId]);
 
-  const upfrontPayment = Number(
-    currentPlan?.upfront_payment || 0
-  );
+  const upfrontPayment =
+    currentPlan?.upfront_payment !== null &&
+    currentPlan?.upfront_payment !== undefined &&
+    !isNaN(currentPlan.upfront_payment)
+      ? Number(currentPlan.upfront_payment)
+      : null;
 
-  const cashbackAmount = Number(
-    currentPlan?.cashback_amount || 0
-  );
+  const cashbackAmount =
+    currentPlan?.cashback_amount !== null &&
+    currentPlan?.cashback_amount !== undefined &&
+    !isNaN(currentPlan.cashback_amount)
+      ? Number(currentPlan.cashback_amount)
+      : 0;
 
-  const emiStartDateFormatted = formatEmiDate(
-    currentPlan?.emi_start_date
-  );
+  const emiStartDateFormatted = currentPlan?.emi_start_date
+    ? formatEmiDate(currentPlan.emi_start_date)
+    : "";
 
   /*
    * Images come directly from the selected variant
    */
-  const galleryImages =
-    selectedVariant?.image_urls || [];
+  const galleryImages = Array.isArray(selectedVariant?.image_urls)
+    ? selectedVariant.image_urls
+    : [];
 
   /*
    * Get unique colors from available variants
@@ -260,6 +268,24 @@ function ProductDetailsPage() {
       setSelectedPlanId(null);
     }
   };
+
+  /*
+   * Format variant details for heading and subtitle
+   */
+  const variantTitleDetails = [
+    selectedVariant?.color,
+    selectedVariant?.storage,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  const variantSpecsText = [
+    selectedVariant?.storage ? `Storage: ${selectedVariant.storage}` : null,
+    selectedVariant?.ram ? `RAM: ${selectedVariant.ram}` : null,
+    selectedVariant?.color ? `Color: ${selectedVariant.color}` : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   /*
    * Loading state
@@ -357,16 +383,13 @@ function ProductDetailsPage() {
               selectedImageIndex={selectedImageIndex}
               setSelectedImageIndex={setSelectedImageIndex}
               productName={product.name}
-              rating={product.rating}
             />
 
             <VariantSelector
               distinctColors={distinctColors}
               selectedColor={selectedVariant?.color}
               onColorSelect={handleColorSelect}
-              availableStorageVariants={
-                availableStorageVariants
-              }
+              availableStorageVariants={availableStorageVariants}
               selectedVariant={selectedVariant}
               onVariantSelect={handleVariantSelect}
             />
@@ -382,40 +405,43 @@ function ProductDetailsPage() {
               <h1 className="text-xl sm:text-2xl font-bold text-gray-950 tracking-tight leading-snug">
                 {product.brand} {product.name}
 
-                {selectedVariant && (
+                {variantTitleDetails && (
                   <span className="font-semibold text-gray-900">
                     {" "}
-                    ({selectedVariant.color},{" "}
-                    {selectedVariant.storage})
+                    ({variantTitleDetails})
                   </span>
                 )}
               </h1>
 
-              {selectedVariant && (
+              {variantSpecsText && (
                 <p className="text-xs text-gray-500 mt-1">
-                  Storage: {selectedVariant.storage},
-                  {" "}
-                  Color: {selectedVariant.color}
+                  {variantSpecsText}
                 </p>
               )}
 
-              <div className="flex items-center gap-1.5 mt-2.5">
-                <span className="text-xs font-semibold text-gray-800 flex items-center gap-1">
-                  <span>🔥</span>
-
-                  <span>
-                    {product.sold_count} sold
+              {Number(product.sold_count) > 0 && (
+                <div className="flex items-center gap-1.5 mt-2.5">
+                  <span className="text-xs font-semibold text-gray-800 flex items-center gap-1">
+                    <span>🔥</span>
+                    <span>
+                      {product.sold_count} sold
+                    </span>
                   </span>
-                </span>
-              </div>
+                </div>
+              )}
 
               <div className="mt-3.5 flex items-baseline gap-2.5 flex-wrap">
+                {hasPrice ? (
+                  <span className="text-2xl sm:text-3xl font-black text-gray-950">
+                    ₹{formatCurrency(price)}
+                  </span>
+                ) : (
+                  <span className="text-lg font-semibold text-gray-500">
+                    Price on request
+                  </span>
+                )}
 
-                <span className="text-2xl sm:text-3xl font-black text-gray-950">
-                  ₹{formatCurrency(price)}
-                </span>
-
-                {mrp > price && (
+                {hasMrp && mrp > price && (
                   <span className="text-base sm:text-lg text-gray-400 line-through font-normal">
                     ₹{formatCurrency(mrp)}
                   </span>
@@ -426,101 +452,14 @@ function ProductDetailsPage() {
                     {discountPercent}% OFF
                   </span>
                 )}
-
               </div>
 
-              {/* FlexPay App banner */}
-              <div className="mt-5 flex flex-col sm:flex-row items-center justify-between gap-3 rounded-xl bg-[#f4f7f5] p-3.5 border border-emerald-100/60">
-
-                <div className="flex items-center gap-2.5">
-
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-emerald-700 shadow-2xs border border-emerald-100">
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-                      />
-                    </svg>
-                  </div>
-
-                  <div>
-                    <h4 className="text-xs font-bold text-gray-900 leading-tight">
-                      Higher Credit Instantly
-                    </h4>
-
-                    <p className="text-[11px] text-gray-500 leading-tight">
-                      Download FlexPay App
-                    </p>
-                  </div>
-
-                </div>
-
-                {/* App store buttons */}
-                <div className="flex items-center gap-2 shrink-0">
-
-                  <a
-                    href="#app-store"
-                    className="flex items-center gap-1.5 rounded-lg bg-black px-2.5 py-1.5 text-white hover:bg-gray-800 transition"
-                  >
-                    <svg
-                      className="w-3.5 h-3.5"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 3.81 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.88c.64-.78 1.08-1.86.96-2.88-1 .04-2.13.66-2.79 1.44-.59.68-1.1 1.77-.96 2.82 1.11.09 2.15-.6 2.79-1.38z" />
-                    </svg>
-
-                    <div className="text-[9px] font-semibold leading-tight text-left">
-                      <span className="block text-[7px] uppercase text-gray-300">
-                        Download on the
-                      </span>
-
-                      <span>
-                        App Store
-                      </span>
-                    </div>
-                  </a>
-
-                  <a
-                    href="#google-play"
-                    className="flex items-center gap-1.5 rounded-lg bg-black px-2.5 py-1.5 text-white hover:bg-gray-800 transition"
-                  >
-                    <svg
-                      className="w-3.5 h-3.5"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M3.609 1.814L13.792 12 3.61 22.186A2.29 2.29 0 0 1 3 20.59V3.41c0-.623.23-1.189.609-1.596zm11.605 11.607l2.25 2.25-11.83 6.721 9.58-8.971zm0-2.842L5.634 1.608l11.83 6.721-2.25 2.25zM16.636 12l2.646-1.503a1.996 1.996 0 0 1 0 3.006L16.636 12z" />
-                    </svg>
-
-                    <div className="text-[9px] font-semibold leading-tight text-left">
-                      <span className="block text-[7px] uppercase text-gray-300">
-                        GET IT ON
-                      </span>
-
-                      <span>
-                        Google Play
-                      </span>
-                    </div>
-                  </a>
-
-                </div>
-              </div>
             </div>
 
             {/* EMI plans */}
             <EmiPlanCard
               upfrontPayment={upfrontPayment}
-              emiStartDateFormatted={
-                emiStartDateFormatted
-              }
+              emiStartDateFormatted={emiStartDateFormatted}
               emiPlans={emiPlans}
               selectedPlanId={selectedPlanId}
               onSelectPlan={setSelectedPlanId}

@@ -3,10 +3,6 @@ function SidebarFilters({
   setIsSidebarOpen,
   hasActiveFilters,
   clearFilters,
-  selectedDownpayment,
-  setSelectedDownpayment,
-  selectedTenure,
-  setSelectedTenure,
   selectedPriceRange,
   setSelectedPriceRange,
   minPriceInput,
@@ -67,103 +63,17 @@ function SidebarFilters({
         )}
       </div>
 
-      {/* Filter Section 1: Downpayment (Pay Now) */}
-      <div className="py-3.5 border-b border-gray-100">
-        <h3 className="text-xs sm:text-[13px] font-bold uppercase tracking-wide text-gray-800 mb-2.5">
-          Downpayment (Pay Now)
-        </h3>
-        <div className="space-y-2">
-          {[
-            { label: "₹499 or less", val: "499" },
-            { label: "₹999 or less", val: "999" },
-            { label: "₹1,999 or less", val: "1999" },
-          ].map((opt) => {
-            const isActive = selectedDownpayment === opt.val;
-            return (
-              <button
-                key={opt.val}
-                type="button"
-                onClick={() => setSelectedDownpayment(isActive ? null : opt.val)}
-                className="flex items-center gap-2.5 py-1 text-left w-full group cursor-pointer"
-              >
-                <span
-                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all ${
-                    isActive
-                      ? "border-[#0e704e] bg-[#0e704e]"
-                      : "border-gray-300 bg-white group-hover:border-[#0e704e]"
-                  }`}
-                >
-                  {isActive && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
-                </span>
-                <span
-                  className={`text-xs sm:text-[13px] transition-colors ${
-                    isActive
-                      ? "font-semibold text-gray-950"
-                      : "font-normal text-gray-700 group-hover:text-gray-950"
-                  }`}
-                >
-                  {opt.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Filter Section 2: EMI Tenure */}
-      <div className="py-3.5 border-b border-gray-100">
-        <h3 className="text-xs sm:text-[13px] font-bold uppercase tracking-wide text-gray-800 mb-2.5">
-          EMI Tenure
-        </h3>
-        <div className="space-y-2">
-          {[
-            { label: "2 months or more", val: "2" },
-            { label: "4 months or more", val: "4" },
-            { label: "6 months or more", val: "6" },
-          ].map((opt) => {
-            const isActive = selectedTenure === opt.val;
-            return (
-              <button
-                key={opt.val}
-                type="button"
-                onClick={() => setSelectedTenure(isActive ? null : opt.val)}
-                className="flex items-center gap-2.5 py-1 text-left w-full group cursor-pointer"
-              >
-                <span
-                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all ${
-                    isActive
-                      ? "border-[#0e704e] bg-[#0e704e]"
-                      : "border-gray-300 bg-white group-hover:border-[#0e704e]"
-                  }`}
-                >
-                  {isActive && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
-                </span>
-                <span
-                  className={`text-xs sm:text-[13px] transition-colors ${
-                    isActive
-                      ? "font-semibold text-gray-950"
-                      : "font-normal text-gray-700 group-hover:text-gray-950"
-                  }`}
-                >
-                  {opt.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Filter Section 3: Price */}
+      {/* Filter Section: Price */}
       <div className="py-3.5 border-b border-gray-100">
         <h3 className="text-xs sm:text-[13px] font-bold uppercase tracking-wide text-gray-800 mb-2.5">
           Price
         </h3>
         <div className="space-y-2">
           {[
-            { label: "Below ₹36,400 (1913)", val: "below36400" },
-            { label: "₹36,401 to ₹72,600 (526)", val: "36401-72600" },
-            { label: "₹72,601 to ₹1,08,800 (132)", val: "72601-108800" },
-            { label: "Above ₹1,08,800 (38)", val: "above108800" },
+            { label: "Below ₹36,400", val: "below36400" },
+            { label: "₹36,401 to ₹72,600", val: "36401-72600" },
+            { label: "₹72,601 to ₹1,08,800", val: "72601-108800" },
+            { label: "Above ₹1,08,800", val: "above108800" },
           ].map((opt) => {
             const isActive = selectedPriceRange === opt.val;
             return (
@@ -228,7 +138,7 @@ function SidebarFilters({
         </div>
       </div>
 
-      {/* Filter Section 4: Brand */}
+      {/* Filter Section: Brand */}
       <div className="pt-3.5">
         <h3 className="text-xs sm:text-[13px] font-bold uppercase tracking-wide text-gray-800 mb-2.5">
           Brand
