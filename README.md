@@ -67,7 +67,7 @@ PostgreSQL
 
 ## System Architecture
 
-![FlexPay Architecture](./Frontend/public/images/flexpay-architecture.png)
+![FlexPay Architecture](./Frontend/public/flexpay-architecture.png)
 
 ## Project Structure
 
