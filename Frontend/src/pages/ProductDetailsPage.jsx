@@ -28,7 +28,10 @@ const formatEmiDate = (dateString) => {
 
   try {
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "";
+
+    if (isNaN(date.getTime())) {
+      return "";
+    }
 
     const day = date.getDate();
 
@@ -100,6 +103,7 @@ function ProductDetailsPage() {
         setProduct(productResponse.data);
 
         const productVariants = variantsResponse?.data || [];
+
         setVariants(productVariants);
 
         if (productVariants.length > 0) {
@@ -138,7 +142,10 @@ function ProductDetailsPage() {
         const plans = response?.data || [];
 
         setEmiPlans(plans);
-        setSelectedPlanId(plans[0]?.id || null);
+
+        // Do not automatically select an EMI plan.
+        // The user must explicitly choose one.
+        setSelectedPlanId(null);
       } catch (err) {
         console.error("Error loading EMI plans:", err);
 
@@ -157,9 +164,14 @@ function ProductDetailsPage() {
   const rawMrp = selectedVariant?.mrp;
 
   const hasPrice =
-    rawPrice !== null && rawPrice !== undefined && !isNaN(rawPrice);
+    rawPrice !== null &&
+    rawPrice !== undefined &&
+    !isNaN(rawPrice);
+
   const hasMrp =
-    rawMrp !== null && rawMrp !== undefined && !isNaN(rawMrp);
+    rawMrp !== null &&
+    rawMrp !== undefined &&
+    !isNaN(rawMrp);
 
   const price = hasPrice ? Number(rawPrice) : null;
   const mrp = hasMrp ? Number(rawMrp) : null;
@@ -171,16 +183,28 @@ function ProductDetailsPage() {
 
   /*
    * Currently selected EMI plan
+   *
+   * A plan only becomes currentPlan after
+   * the user explicitly selects it.
    */
   const currentPlan = useMemo(() => {
-    if (!emiPlans || emiPlans.length === 0) return null;
+    if (
+      !emiPlans ||
+      emiPlans.length === 0 ||
+      !selectedPlanId
+    ) {
+      return null;
+    }
+
     return (
       emiPlans.find((plan) => plan.id === selectedPlanId) ||
-      emiPlans[0] ||
       null
     );
   }, [emiPlans, selectedPlanId]);
 
+  /*
+   * Upfront payment comes from selected EMI plan
+   */
   const upfrontPayment =
     currentPlan?.upfront_payment !== null &&
     currentPlan?.upfront_payment !== undefined &&
@@ -188,13 +212,9 @@ function ProductDetailsPage() {
       ? Number(currentPlan.upfront_payment)
       : null;
 
-  const cashbackAmount =
-    currentPlan?.cashback_amount !== null &&
-    currentPlan?.cashback_amount !== undefined &&
-    !isNaN(currentPlan.cashback_amount)
-      ? Number(currentPlan.cashback_amount)
-      : 0;
-
+  /*
+   * EMI start date comes from selected EMI plan
+   */
   const emiStartDateFormatted = currentPlan?.emi_start_date
     ? formatEmiDate(currentPlan.emi_start_date)
     : "";
@@ -202,11 +222,13 @@ function ProductDetailsPage() {
   /*
    * Images come directly from the selected variant
    */
-  const galleryImages = Array.isArray(selectedVariant?.image_urls)
-  ? selectedVariant.image_urls.filter(Boolean)
-  : [];
+  const galleryImages = Array.isArray(
+    selectedVariant?.image_urls
+  )
+    ? selectedVariant.image_urls.filter(Boolean)
+    : [];
 
-    const hasProductImages = galleryImages.length > 0;
+  const hasProductImages = galleryImages.length > 0;
 
   /*
    * Get unique colors from available variants
@@ -251,6 +273,8 @@ function ProductDetailsPage() {
     if (matchingVariant) {
       setSelectedVariant(matchingVariant);
       setSelectedImageIndex(0);
+
+      // Reset EMI selection when variant changes
       setSelectedPlanId(null);
     }
   };
@@ -267,6 +291,8 @@ function ProductDetailsPage() {
     if (matchingVariant) {
       setSelectedVariant(matchingVariant);
       setSelectedImageIndex(0);
+
+      // Reset EMI selection when variant changes
       setSelectedPlanId(null);
     }
   };
@@ -282,9 +308,17 @@ function ProductDetailsPage() {
     .join(", ");
 
   const variantSpecsText = [
-    selectedVariant?.storage ? `Storage: ${selectedVariant.storage}` : null,
-    selectedVariant?.ram ? `RAM: ${selectedVariant.ram}` : null,
-    selectedVariant?.color ? `Color: ${selectedVariant.color}` : null,
+    selectedVariant?.storage
+      ? `Storage: ${selectedVariant.storage}`
+      : null,
+
+    selectedVariant?.ram
+      ? `RAM: ${selectedVariant.ram}`
+      : null,
+
+    selectedVariant?.color
+      ? `Color: ${selectedVariant.color}`
+      : null,
   ]
     .filter(Boolean)
     .join(", ");
@@ -380,28 +414,31 @@ function ProductDetailsPage() {
           {/* LEFT COLUMN */}
           <div className="lg:col-span-6 xl:col-span-7 flex flex-col gap-5">
 
+            {/* Product Gallery */}
             {hasProductImages ? (
-                <ProductGallery
-                    galleryImages={galleryImages}
-                    selectedImageIndex={selectedImageIndex}
-                    setSelectedImageIndex={setSelectedImageIndex}
-                    productName={product.name}
-                />
-                ) : (
-                <div className="flex aspect-square items-center justify-center rounded-xl bg-gray-100 text-gray-500">
-                    Product image unavailable
-                </div>
+              <ProductGallery
+                galleryImages={galleryImages}
+                selectedImageIndex={selectedImageIndex}
+                setSelectedImageIndex={setSelectedImageIndex}
+                productName={product.name}
+              />
+            ) : (
+              <div className="flex aspect-square items-center justify-center rounded-xl bg-gray-100 text-gray-500">
+                Product image unavailable
+              </div>
             )}
 
+            {/* Variant Selector */}
             <VariantSelector
               distinctColors={distinctColors}
               selectedColor={selectedVariant?.color}
               onColorSelect={handleColorSelect}
-              availableStorageVariants={availableStorageVariants}
+              availableStorageVariants={
+                availableStorageVariants
+              }
               selectedVariant={selectedVariant}
               onVariantSelect={handleVariantSelect}
             />
-
           </div>
 
           {/* RIGHT COLUMN */}
@@ -431,6 +468,7 @@ function ProductDetailsPage() {
                 <div className="flex items-center gap-1.5 mt-2.5">
                   <span className="text-xs font-semibold text-gray-800 flex items-center gap-1">
                     <span>🔥</span>
+
                     <span>
                       {product.sold_count} sold
                     </span>
@@ -461,10 +499,9 @@ function ProductDetailsPage() {
                   </span>
                 )}
               </div>
-
             </div>
 
-            {/* EMI plans */}
+            {/* EMI Plans */}
             <EmiPlanCard
               upfrontPayment={upfrontPayment}
               emiStartDateFormatted={emiStartDateFormatted}
@@ -472,7 +509,6 @@ function ProductDetailsPage() {
               selectedPlanId={selectedPlanId}
               onSelectPlan={setSelectedPlanId}
               currentPlan={currentPlan}
-              cashbackAmount={cashbackAmount}
             />
 
           </div>

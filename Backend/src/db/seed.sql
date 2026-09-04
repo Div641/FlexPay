@@ -244,7 +244,7 @@ WITH color_images (slug, color, image_urls) AS (
     -- Apple iPhone 16 Pro
     ('iphone-16-pro', 'Black Titanium', jsonb_build_array('/images/products/iphone-16-pro-bt-back.webp', '/images/products/iphone-16-pro-bt-side.webp')),
     ('iphone-16-pro', 'White Titanium', jsonb_build_array('/images/products/iphone-16-pro-wt-back.webp', '/images/products/iphone-16-pro-wt-side.webp', '/images/products/iphone-16-pro-wt-set.webp')),
-    ('iphone-16-pro', 'Desert Titanium', jsonb_build_array('/images/products/iphone-16-pro-dt-back.webp', '/images/products/iphone-16-pro-dt-side.webp', '/images/products/iphone-16-pro-dt-set.jpeg')),
+    ('iphone-16-pro', 'Desert Titanium', jsonb_build_array('/images/products/iphone-16-pro-dt-back.webp', '/images/products/iphone-16-pro-dt-side.jpeg', '/images/products/iphone-16-pro-dt-set.webp')),
 
     -- Apple iPhone 16 Pro Max
     ('iphone-16-pro-max', 'Black Titanium', jsonb_build_array('/images/products/iphone-16-pro-max-bt-back.webp', '/images/products/iphone-16-pro-max-bt-set.webp', '/images/products/iphone-16-pro-max-bt-side.webp')),
@@ -252,7 +252,7 @@ WITH color_images (slug, color, image_urls) AS (
     ('iphone-16-pro-max', 'Desert Titanium', jsonb_build_array('/images/products/iphone-16-pro-max-dt-side.webp', '/images/products/iphone-16-pro-max-dt-back.webp', '/images/products/iphone-16-pro-max-dt-set.webp')),
 
     -- Apple iPhone 15
-    ('iphone-15', 'Black', jsonb_build_array('/images/products/iphone-15-black-back.webp', '/images/products/iphone-15-black-side.webp', '/images/products/iphone-15-black-set.webp')),
+    ('iphone-15', 'Black', jsonb_build_array('/images/products/iphone-15-black-back.webp', '/images/products/iphone-15-black-set.webp')),
     ('iphone-15', 'Blue', jsonb_build_array('/images/products/iphone-15-blue-back.webp', '/images/products/iphone-15-blue-side.webp')),
     ('iphone-15', 'Green', jsonb_build_array('/images/products/iphone-15-green-back.webp', '/images/products/iphone-15-green-side.webp', '/images/products/iphone-15-green-set.webp')),
 
